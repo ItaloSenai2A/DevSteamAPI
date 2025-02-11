@@ -13,7 +13,6 @@ namespace DevSteamAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class JogosController : ControllerBase
     {
         private readonly DevSteamAPIContext _context;
@@ -25,7 +24,6 @@ namespace DevSteamAPI.Controllers
 
         // GET: api/Jogos
         [HttpGet]
-        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Jogo>>> GetJogos()
         {
             return await _context.Jogos.ToListAsync();
@@ -45,8 +43,23 @@ namespace DevSteamAPI.Controllers
             return jogo;
         }
 
+        // GET: api/Jogos/ByName
+        [HttpGet("ByName")]
+        public async Task<ActionResult<IEnumerable<Jogo>>> GetJogosByName(string name)
+        {
+            var jogos = await _context.Jogos
+                .Where(j => j.JogoNome.Contains(name, StringComparison.OrdinalIgnoreCase))
+                .ToListAsync();
+
+            if (jogos == null || !jogos.Any())
+            {
+                return NotFound();
+            }
+
+            return jogos;
+        }
+
         // PUT: api/Jogos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJogo(Guid id, Jogo jogo)
         {
@@ -77,7 +90,6 @@ namespace DevSteamAPI.Controllers
         }
 
         // POST: api/Jogos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Jogo>> PostJogo(Jogo jogo)
         {
